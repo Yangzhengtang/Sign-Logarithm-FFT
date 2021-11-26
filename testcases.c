@@ -1,7 +1,7 @@
 #include "log_fft.h"
 
 void test_quantize_and_inverse(){
-    double x = 0.314159263838438;
+    double x = 0.31415926;
     char sig_x = 0;
     fixed_point_t  log_x = 0;
     sig_log_t sl_x = quantizer(x);
@@ -14,8 +14,8 @@ void test_quantize_and_inverse(){
 }
 
 void test_op(){
-    double a = -0.75;
-    double b = -0.25;
+    double a = 0.75;
+    double b = -0.75;
     sig_log_t sl_a = quantizer(a);
     sig_log_t sl_b = quantizer(b);
 

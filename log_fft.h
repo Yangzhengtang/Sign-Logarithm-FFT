@@ -37,6 +37,7 @@ sig_log_t multi_sl(sig_log_t a, sig_log_t b){
 /*
     Two helper functions used in the add and sub op.
     Possible Bug Here !!!
+    Now they only accept positive input.
 */
 fixed_point_t beta_func(fixed_point_t x){
     double t = log2(pow(2, fixed_to_double(x)) + 1);
@@ -63,6 +64,11 @@ sig_log_t _add_sl(sig_log_t a, sig_log_t b){
 
 sig_log_t _sub_sl(sig_log_t a, sig_log_t b){
     sig_log_t ret;
+    if(a.log_a == b.log_a){     //  Don't know how to handle 0
+        ret.sig_a = 0;
+        ret.log_a = 0;
+        return ret;
+    }
     if(a.log_a > b.log_a){
         ret.sig_a = a.sig_a;
         ret.log_a = a.log_a + gamma_func(b.log_a - a.log_a);
@@ -106,7 +112,7 @@ sig_log_t sub_sl(sig_log_t a, sig_log_t b){
         _a.sig_a = 0;
         sig_log_t _b = b;
         _b.sig_a = 0;
-        sig_log_t t = _add_sl(_a, _b);
+        sig_log_t t = _sub_sl(_a, _b);
         t.sig_a = 1;
         return t;
     }
