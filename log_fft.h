@@ -23,7 +23,7 @@ int sg_T = 16;
 int sg_B = (int)(sizeof(fixed_point_t))*8 - FIXED_POINT_FRACTIONAL_BITS;         //  Two parameters mentioned in the paper
 
 typedef struct sig_log_t{
-    char sig_a;
+    int sig_a;
     fixed_point_t log_a;
 }   sig_log_t;
 
@@ -31,7 +31,7 @@ sig_log_t multi_sl(sig_log_t a, sig_log_t b){
     fixed_point_t Kc = double_to_fixed(log2(sg_T));
     sig_log_t ret;
     ret.log_a = a.log_a + b.log_a - Kc;
-    ret.sig_a = a.sig_a ^ b.sig_a;
+    ret.sig_a = a.sig_a * b.sig_a;
     return ret;
 }
 
@@ -75,46 +75,50 @@ sig_log_t _sub_sl(sig_log_t a, sig_log_t b){
         ret.log_a = a.log_a + gamma_func(b.log_a - a.log_a);
     }
     else{
-        ret.sig_a = b.sig_a ? 0 : 1;
+        ret.sig_a = - b.sig_a;
         ret.log_a = b.log_a + gamma_func(a.log_a - b.log_a);
     }
     return ret;
 }
 
 sig_log_t add_sl(sig_log_t a, sig_log_t b){
-    if(a.sig_a == 0 && b.sig_a == 1){
+    if(a.sig_a == 0)    return b;
+    if(b.sig_a == 0)    return a;
+    if(a.sig_a == 1 && b.sig_a == -1){
         sig_log_t _b = b;
-        _b.sig_a = 0;
+        _b.sig_a = 1;
         return _sub_sl(a, _b);
     }
-    if(a.sig_a == 1 && b.sig_a == 0){
+    if(a.sig_a == -1 && b.sig_a == 1){
         sig_log_t _a = a;
-        _a.sig_a = 0;
+        _a.sig_a = 1;
         return _sub_sl(b, _a);
     }
     return _add_sl(a, b);
 }
 
 sig_log_t sub_sl(sig_log_t a, sig_log_t b){
-    if(a.sig_a == 0 && b.sig_a == 1){
+    if(a.sig_a == 0)    return b;
+    if(b.sig_a == 0)    return a;
+    if(a.sig_a == 1 && b.sig_a == -1){
         sig_log_t _b = b;
-        _b.sig_a = 0;
+        _b.sig_a = 1;
         return _add_sl(a, _b);
     }
-    if(a.sig_a == 1 && b.sig_a == 0){
+    if(a.sig_a == -1 && b.sig_a == 1){
         sig_log_t _a = a;
-        _a.sig_a = 0;
+        _a.sig_a = 1;
         sig_log_t t = _add_sl(_a, b);
-        t.sig_a = 1;
+        t.sig_a = -1;
         return t;
     }
-    if(a.sig_a == 1 && b.sig_a == 1){
+    if(a.sig_a == -1 && b.sig_a == -1){
         sig_log_t _a = a;
-        _a.sig_a = 0;
+        _a.sig_a = 1;
         sig_log_t _b = b;
-        _b.sig_a = 0;
+        _b.sig_a = 1;
         sig_log_t t = _sub_sl(_a, _b);
-        t.sig_a = 1;
+        t.sig_a = -1;
         return t;
     }
     return _sub_sl(a, b);
@@ -166,18 +170,18 @@ sig_log_t quantizer(double x){
     ret.log_a = double_to_fixed(log_a_double);
 
     if(x < 0)
-        ret.sig_a = 1;
+        ret.sig_a = -1;
     else if(x > 0)
-        ret.sig_a = 0;
+        ret.sig_a = 1;
     else{
         //  printf("Quantizing a 0: %f\n", x);  //  This case should be avoided.
-        ret.sig_a = 1;
+        ret.sig_a = 0;
     }
     return ret;
 }
 
 double inverse(sig_log_t n){
-    int sign = 1 - 2 * n.sig_a;
+    int sign = n.sig_a;
     double log_a_double = fixed_to_double(n.log_a);
     double value = (pow(2, log_a_double)) / sg_T;
     return (sign * value);
