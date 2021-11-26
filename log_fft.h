@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #include "utils.h"
 
 /*
@@ -18,7 +19,7 @@
     end if
 */
 
-int sg_T = 8;
+int sg_T = 16;
 int sg_B = (int)(sizeof(fixed_point_t))*8 - FIXED_POINT_FRACTIONAL_BITS;         //  Two parameters mentioned in the paper
 
 typedef struct sig_log_t{
@@ -119,11 +120,35 @@ sig_log_t sub_sl(sig_log_t a, sig_log_t b){
     return _sub_sl(a, b);
 }
 
-
+/**
+ * Complex sig_log number structure, and according operation:
+ * 
+ */
 typedef struct complex_sl_t{
     sig_log_t imag;
     sig_log_t real;
 }   complex_sl_t;
+
+complex_sl_t multi_cplx_sl(complex_sl_t a, complex_sl_t b){
+    complex_sl_t ret;
+    ret.imag = add_sl(multi_sl(a.real, b.imag), multi_sl(a.imag, b.real));
+    ret.real = sub_sl(multi_sl(a.real, b.real), multi_sl(a.imag, b.imag));
+    return ret;
+}
+
+complex_sl_t add_cplx_sl(complex_sl_t a, complex_sl_t b){
+    complex_sl_t ret;
+    ret.imag = add_sl(a.imag, b.imag);
+    ret.real = add_sl(a.real, b.real);
+    return ret;
+}
+
+complex_sl_t sub_cplx_sl(complex_sl_t a, complex_sl_t b){
+    complex_sl_t ret;
+    ret.imag = sub_sl(a.imag, b.imag);
+    ret.real = sub_sl(a.real, b.real);
+    return ret;
+}
 
 /*
     Double precission number to sign/logarithm number
@@ -145,7 +170,7 @@ sig_log_t quantizer(double x){
     else if(x > 0)
         ret.sig_a = 0;
     else{
-        printf("Quantizing a 0: %f\n", x);  //  This case should be avoided.
+        //  printf("Quantizing a 0: %f\n", x);  //  This case should be avoided.
         ret.sig_a = 1;
     }
     return ret;
@@ -160,9 +185,47 @@ double inverse(sig_log_t n){
 
 /*
     Xa = Xa + W * Xb
-    Xb = Xa - W * Xa
+    Xb = Xa - W * Xb
     W = exp(−2πi/N k) Xk+N/2
 */
-void log_butterfly_unit(complex_sl_t* xa, complex_sl_t* xb, complex_sl_t w){
+void log_butterfly_unit(complex_sl_t xa, complex_sl_t xb, complex_sl_t w){
+    complex_sl_t temp = multi_cplx_sl(w, xb);
+    xa = add_cplx_sl(xa, temp);
+    xb = sub_cplx_sl(xa, temp);
+}
 
+complex_sl_t get_pow_e(double ratio){
+    const double _PI = atan2(1, 1) * 4;
+    complex_sl_t ret;
+    ret.real = quantizer(cos(_PI * ratio));
+    ret.imag = quantizer(sin(_PI * ratio));
+    return ret;
+}
+
+
+void _sl_fft(complex_sl_t* buf, complex_sl_t* out, int n, int step)
+{
+	if (step < n) {
+		_sl_fft(out, buf, n, step * 2);
+		_sl_fft(out + step, buf + step, n, step * 2);
+ 
+		for (int i = 0; i < n; i += 2 * step) {
+            complex_sl_t w = get_pow_e(-1.0 * i / n);
+            complex_sl_t temp = multi_cplx_sl(w, out[i+step]);
+			buf[i / 2]     = add_cplx_sl(out[i], temp);
+			buf[(i + n)/2] = add_cplx_sl(out[i], temp);
+		}
+	}
+}
+ 
+void sl_fft(complex_sl_t* buf, int n)
+{
+	complex_sl_t* out = (complex_sl_t*)malloc(n * sizeof(complex_sl_t));
+
+	for (int i = 0; i < n; i++)
+        out[i] = buf[i];
+ 
+	_sl_fft(buf, out, n, 1);
+
+    free(out);
 }

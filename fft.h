@@ -2,7 +2,7 @@
 #include <math.h>
 #include <complex.h>
  
-double PI;
+double PI = 3.14159265358979323846;
 typedef double complex cplx;
  
 void _fft(cplx buf[], cplx out[], int n, int step)
@@ -35,18 +35,6 @@ void show(const char * s, cplx buf[]) {
 			printf("%g ", creal(buf[i]));
 		else
 			printf("(%g, %g) ", creal(buf[i]), cimag(buf[i]));
-}
- 
-int main()
-{
-	PI = atan2(1, 1) * 4;
-	cplx buf[] = {1, 1, 1, 1, 0, 0, 0, 0};
- 
-	show("Data: ", buf);
-	fft(buf, 8);
-	show("\nFFT : ", buf);
- 
-	return 0;
 }
  
  
