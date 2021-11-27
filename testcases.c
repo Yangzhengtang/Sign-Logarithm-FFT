@@ -1,6 +1,6 @@
 #include "log_fft.h"
 #include "fft.h"
-
+//  utils is included from log_fft
 
 void test_quantize_and_inverse(){
     double x = 0.31415926;
@@ -35,11 +35,11 @@ void print_single_cplx_sl(complex_sl_t a){
     double real = inverse(a.real);
     // double size = sqrt(imag * imag + real * real);
 
-    printf("(%.2f, %.2f)", real, imag);
+    printf("(%.3f, %.3f) ", real, imag);
 }
 
-void print_array_cplx_sl(complex_sl_t a[], int n){
-    printf("Array: ");
+void print_array_cplx_sl(const char * s, complex_sl_t a[], int n){
+    printf("%s", s);
     for(int i=0; i<n; i++)  print_single_cplx_sl(a[i]);
     printf("\n");
 }
@@ -61,42 +61,58 @@ void test_get_pow_e(){
 /*
     Testing real inputs
 */
-int test_fft()
+int test_log_fft(double* input_vec, int n)
 {
-    complex_sl_t buf[8];
-    for(int i=0; i<4; i++){
-        buf[i].real = quantizer(0.5);
-        buf[i].imag = quantizer(0);
-    }
-    for(int i=4; i<8; i++){
-        buf[i].real = quantizer(0);
+    complex_sl_t* buf = (complex_sl_t*) malloc(n * sizeof(complex_sl_t));
+
+    for(int i=0; i<n; i++){
+        buf[i].real = quantizer(input_vec[i]);
         buf[i].imag = quantizer(0);
     }
 
-    print_array_cplx_sl(buf, 8);
-    sl_fft(buf, 8);
-    print_array_cplx_sl(buf, 8);
+    print_array_cplx_sl("Data: ", buf, n);
+    sl_fft(buf, n);
+    print_array_cplx_sl("FFT : ", buf, n);
  
+    free(buf);
+
 	return 0;
 }
 
-int test_default_fft()
+int test_default_fft(double* input_vec, int n)
 {
-    //  int input[] = {1, 1, 1, 1, 0, 0, 0, 0};
-	cplx buf[8] = {0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0};
-	show("Data: ", buf);
+    cplx* buf = (cplx*)malloc(n * sizeof(cplx));
+    for(int i=0; i<n; i++)  buf[i] = input_vec[i];
+	//  cplx buf[8] = {0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0};
+	show("Data: ", buf, n);
 	fft(buf, 8);
-	show("\nFFT : ", buf);
+	show("\nFFT : ", buf, n);
     printf("\n");
 
+    free(buf);
 	return 0;
 }
 
+void test_n_point_fft(int n){
+    //  Initialize random data
+    double* input_vec = (double*)malloc(n * sizeof(double));
+    for(int i=0; i<n; i++)  input_vec[i] = randfrom(0, 1);
+
+    test_default_fft(input_vec, n);
+    test_log_fft(input_vec, n);
+    
+    free(input_vec);
+}
+
+void simple_test(){
+    double input_vec[8] = {1.0,1.0,1.0,1.0,0,0,0,0};
+
+    test_default_fft(input_vec, 8);
+    test_log_fft(input_vec, 8);
+}
 
 int main(){
-    srand(time(NULL));
-    test_default_fft();
-    test_fft();
-    //  test_get_pow_e();
+    test_n_point_fft(8);
+    
     return 0;
 }

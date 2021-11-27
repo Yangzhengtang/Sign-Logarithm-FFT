@@ -5,7 +5,7 @@
 double PI = 3.14159265358979323846;
 typedef double complex cplx;
  
-void _fft(cplx buf[], cplx out[], int n, int step)
+void _fft(cplx* buf, cplx* out, int n, int step)
 {
 	if (step < n) {
 		_fft(out, buf, n, step * 2);
@@ -19,22 +19,24 @@ void _fft(cplx buf[], cplx out[], int n, int step)
 	}
 }
  
-void fft(cplx buf[], int n)
+void fft(cplx* buf, int n)
 {
-	cplx out[n];
+	cplx* out = (cplx*) malloc(n * sizeof(cplx));
 	for (int i = 0; i < n; i++) out[i] = buf[i];
- 
+
 	_fft(buf, out, n, 1);
+
+	free(out);
 }
  
  
-void show(const char * s, cplx buf[]) {
+void show(const char * s, cplx buf[], int n) {
 	printf("%s", s);
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < n; i++)
 		if (!cimag(buf[i]))
-			printf("%g ", creal(buf[i]));
+			printf("(%.3f, %.3f) ", creal(buf[i]), 0.0);
 		else
-			printf("(%g, %g) ", creal(buf[i]), cimag(buf[i]));
+			printf("(%.3f, %.3f) ", creal(buf[i]), cimag(buf[i]));
 }
  
  

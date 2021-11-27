@@ -24,3 +24,20 @@ inline fixed_point_t double_to_fixed(double input)
 {
     return (fixed_point_t)(round(input * (1 << FIXED_POINT_FRACTIONAL_BITS)));
 }
+
+static int random_initialized = 0;
+
+
+/**
+ * Generator of a random double value
+ */
+double randfrom(double min, double max) 
+{
+    if(random_initialized == 0){
+        srand(time(NULL));
+        random_initialized = 1;
+    }
+    double range = (max - min); 
+    double div = RAND_MAX / range;
+    return min + (rand() / div);
+}
