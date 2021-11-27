@@ -82,7 +82,7 @@ int test_fft()
 
 int test_default_fft()
 {
-    int input[] = {1, 1, 1, 1, 0, 0, 0, 0};
+    //  int input[] = {1, 1, 1, 1, 0, 0, 0, 0};
 	cplx buf[8] = {0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0};
 	show("Data: ", buf);
 	fft(buf, 8);

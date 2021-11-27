@@ -98,8 +98,13 @@ sig_log_t add_sl(sig_log_t a, sig_log_t b){
 }
 
 sig_log_t sub_sl(sig_log_t a, sig_log_t b){
-    if(a.sig_a == 0)    return b;
     if(b.sig_a == 0)    return a;
+    if(a.sig_a == 0){
+        sig_log_t _b = b;
+        _b.sig_a = -1 * (_b.sig_a);
+        return _b;
+    }
+    
     if(a.sig_a == 1 && b.sig_a == -1){
         sig_log_t _b = b;
         _b.sig_a = 1;
@@ -129,28 +134,28 @@ sig_log_t sub_sl(sig_log_t a, sig_log_t b){
  * 
  */
 typedef struct complex_sl_t{
-    sig_log_t imag;
     sig_log_t real;
+    sig_log_t imag;
 }   complex_sl_t;
 
 complex_sl_t multi_cplx_sl(complex_sl_t a, complex_sl_t b){
     complex_sl_t ret;
-    ret.imag = add_sl(multi_sl(a.real, b.imag), multi_sl(a.imag, b.real));
     ret.real = sub_sl(multi_sl(a.real, b.real), multi_sl(a.imag, b.imag));
+    ret.imag = add_sl(multi_sl(a.real, b.imag), multi_sl(a.imag, b.real));
     return ret;
 }
 
 complex_sl_t add_cplx_sl(complex_sl_t a, complex_sl_t b){
     complex_sl_t ret;
-    ret.imag = add_sl(a.imag, b.imag);
     ret.real = add_sl(a.real, b.real);
+    ret.imag = add_sl(a.imag, b.imag);
     return ret;
 }
 
 complex_sl_t sub_cplx_sl(complex_sl_t a, complex_sl_t b){
     complex_sl_t ret;
-    ret.imag = sub_sl(a.imag, b.imag);
     ret.real = sub_sl(a.real, b.real);
+    ret.imag = sub_sl(a.imag, b.imag);
     return ret;
 }
 
@@ -217,7 +222,7 @@ void _sl_fft(complex_sl_t* buf, complex_sl_t* out, int n, int step)
             complex_sl_t w = get_pow_e(-1.0 * i / n);
             complex_sl_t temp = multi_cplx_sl(w, out[i+step]);
 			buf[i / 2]     = add_cplx_sl(out[i], temp);
-			buf[(i + n)/2] = add_cplx_sl(out[i], temp);
+			buf[(i + n)/2] = sub_cplx_sl(out[i], temp);
 		}
 	}
 }
