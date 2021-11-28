@@ -2,6 +2,9 @@
 #include "fft.h"
 //  utils is included from log_fft
 
+//  #define _DEBUG_PRINT_
+//  #define _SUPER_DEBUG_
+
 void test_quantize_and_inverse(){
     double x = 0.31415926;
     char sig_x = 0;
@@ -30,14 +33,6 @@ void test_op(){
     printf("SUM: %f, SUB: %f, MULTI: %f\n", sum, sub, mult);
 }
 
-void print_single_cplx_sl(complex_sl_t a){
-    double imag = inverse(a.imag);
-    double real = inverse(a.real);
-    // double size = sqrt(imag * imag + real * real);
-
-    printf("(%.3f, %.3f) ", real, imag);
-}
-
 void print_array_cplx_sl(const char * s, complex_sl_t a[], int n){
     printf("%s", s);
     for(int i=0; i<n; i++)  print_single_cplx_sl(a[i]);
@@ -61,7 +56,7 @@ void test_get_pow_e(){
 /*
     Testing real inputs
 */
-int test_log_fft(double* input_vec, int n)
+void test_log_fft(double* input_vec, double* output_vec, int n)
 {
     complex_sl_t* buf = (complex_sl_t*) malloc(n * sizeof(complex_sl_t));
 
@@ -70,49 +65,102 @@ int test_log_fft(double* input_vec, int n)
         buf[i].imag = quantizer(0);
     }
 
+#ifdef _DEBUG_PRINT_
     print_array_cplx_sl("Data: ", buf, n);
-    sl_fft(buf, n);
-    print_array_cplx_sl("FFT : ", buf, n);
- 
-    free(buf);
+#endif
 
-	return 0;
+    sl_fft(buf, n);
+
+#ifdef _DEBUG_PRINT_
+    print_array_cplx_sl("FFT : ", buf, n);
+#endif
+
+    for(int i=0; i<n; i++)  output_vec[i] = inverse(buf[i].real);
+
+    free(buf);
 }
 
-int test_default_fft(double* input_vec, int n)
+void test_default_fft(double* input_vec, double* output_vec, int n)
 {
     cplx* buf = (cplx*)malloc(n * sizeof(cplx));
-    for(int i=0; i<n; i++)  buf[i] = input_vec[i];
+    for(int i=0; i<n; i++){
+        buf[i] = inverse(quantizer(input_vec[i]));
+    }  
 	//  cplx buf[8] = {0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0};
-	show("Data: ", buf, n);
-	fft(buf, 8);
-	show("\nFFT : ", buf, n);
+	
+#ifdef _DEBUG_PRINT_
+    show("Data: ", buf, n);
     printf("\n");
+#endif
+
+	fft(buf, n);
+
+#ifdef _DEBUG_PRINT_
+	show("FFT : ", buf, n);
+    printf("\n");
+#endif
+
+    for(int i=0; i<n; i++)  output_vec[i] = creal(buf[i]);
 
     free(buf);
-	return 0;
 }
 
 void test_n_point_fft(int n){
     //  Initialize random data
     double* input_vec = (double*)malloc(n * sizeof(double));
-    for(int i=0; i<n; i++)  input_vec[i] = randfrom(0, 1);
+    double* default_output_vec = (double*)malloc(n * sizeof(double));
+    double* sigNlog_output_vec = (double*)malloc(n * sizeof(double));
+    double* variance_vec = (double*)malloc(n * sizeof(double));
 
-    test_default_fft(input_vec, n);
-    test_log_fft(input_vec, n);
+    for(int i=0; i<n; i++)  input_vec[i] = randfrom(-1, 1);
+
+    test_default_fft(input_vec, default_output_vec, n);
+    test_log_fft(input_vec, sigNlog_output_vec, n);
     
+    double error_sum = 0.0;
+    double sum = 0.0;
+    for(int i=0; i<n; i++){
+        double noise = sigNlog_output_vec[i] - default_output_vec[i];
+        double signal = default_output_vec[i];
+        variance_vec[i] = (noise * noise);
+        sum += signal * signal;
+        error_sum += noise * noise;
+    }
+
+#ifdef _DEBUG_PRINT_
+    printf("The variance: [");
+    for(int i=0; i<n; i++)  printf("%g ", variance_vec[i]);
+    printf("]\n");
+#endif
+
+    double average = error_sum / sum;
+
+#ifdef _DEBUG_PRINT_
+    printf("Average variance: %g, first element: %g, default: %g, new: %g\n", average, variance_vec[0], default_output_vec[0], sigNlog_output_vec[0]);
+#endif
+
+    printf("N: %d, SNR: %g\n", n, average);
+
     free(input_vec);
+    free(default_output_vec);
+    free(sigNlog_output_vec);
+    free(variance_vec);
 }
 
 void simple_test(){
-    double input_vec[8] = {1.0,1.0,1.0,1.0,0,0,0,0};
-
-    test_default_fft(input_vec, 8);
-    test_log_fft(input_vec, 8);
+    double input_vec[8] = {0.250, -0.178, 0.511, 0.006, 0.557, -0.883, -0.374, -0.295};
+    double output_vec1[8] = {1.0,1.0,1.0,1.0,0,0,0,0};
+    double output_vec2[8] = {1.0,1.0,1.0,1.0,0,0,0,0};
+    test_default_fft(input_vec, output_vec1, 8);
+    test_log_fft(input_vec, output_vec2, 8);
 }
 
 int main(){
-    test_n_point_fft(8);
+    //  simple_test();
+    for(int i=1; i<12; i++){
+        test_n_point_fft(1 << i);
+    }
+    
     
     return 0;
 }

@@ -1,3 +1,6 @@
+#ifndef _LOGFFT_INCL_
+#define _LOGFFT_INCL_
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -18,8 +21,13 @@
         end for
     end if
 */
+//  #define _SUPER_DEBUG_
 
-int sg_T = 16;
+#ifdef _SUPER_DEBUG_
+    #define _LOG_FFT_DEBUG_
+#endif
+
+int sg_T = 0b1000000000;
 int sg_B = (int)(sizeof(fixed_point_t))*8 - FIXED_POINT_FRACTIONAL_BITS;         //  Two parameters mentioned in the paper
 
 typedef struct sig_log_t{
@@ -94,6 +102,15 @@ sig_log_t add_sl(sig_log_t a, sig_log_t b){
         _a.sig_a = 1;
         return _sub_sl(b, _a);
     }
+    if(a.sig_a == -1 && b.sig_a == -1){
+        sig_log_t _a = a;
+        _a.sig_a = 1;
+        sig_log_t _b = b;
+        _b.sig_a = 1;
+        sig_log_t t = _add_sl(_a, _b);
+        t.sig_a = -1;
+        return t;
+    }
     return _add_sl(a, b);
 }
 
@@ -122,8 +139,7 @@ sig_log_t sub_sl(sig_log_t a, sig_log_t b){
         _a.sig_a = 1;
         sig_log_t _b = b;
         _b.sig_a = 1;
-        sig_log_t t = _sub_sl(_a, _b);
-        t.sig_a = -1;
+        sig_log_t t = _sub_sl(_b, _a);
         return t;
     }
     return _sub_sl(a, b);
@@ -192,6 +208,13 @@ double inverse(sig_log_t n){
     return (sign * value);
 }
 
+void print_single_cplx_sl(complex_sl_t a){
+    double imag = inverse(a.imag);
+    double real = inverse(a.real);
+
+    printf("(%.3f, %.3f) ", real, imag);
+}
+
 /*
     Xa = Xa + W * Xb
     Xb = Xa - W * Xb
@@ -204,7 +227,8 @@ void log_butterfly_unit(complex_sl_t xa, complex_sl_t xb, complex_sl_t w){
 }
 
 complex_sl_t get_pow_e(double ratio){
-    const double _PI = atan2(1, 1) * 4;
+    //  const double _PI = atan2(1, 1) * 4;
+    const double _PI = 3.14159265358979323846;
     complex_sl_t ret;
     ret.real = quantizer(cos(_PI * ratio));
     ret.imag = quantizer(sin(_PI * ratio));
@@ -223,8 +247,33 @@ void _sl_fft(complex_sl_t* buf, complex_sl_t* out, int n, int step)
             complex_sl_t temp = multi_cplx_sl(w, out[i+step]);
 			buf[i / 2]     = add_cplx_sl(out[i], temp);
 			buf[(i + n)/2] = sub_cplx_sl(out[i], temp);
+#ifdef _LOG_FFT_DEBUG_
+            if(n == 8 && step == 4 && i==0){
+                printf("*** At debug point: buf[4]: ");
+                print_single_cplx_sl(buf[(i + n)/2]);
+                printf(", out[i]: ");
+                print_single_cplx_sl(out[i]);
+                printf(", w: ");
+                print_single_cplx_sl(w);
+                printf(", out[i+step]: ");
+                print_single_cplx_sl(out[i+step]);
+                printf(", temp: ");
+                print_single_cplx_sl(temp);
+                printf("***\n");
+            }
+#endif
 		}
 	}
+
+    #ifdef _LOG_FFT_DEBUG_
+        printf("_sl_fft: n(%d), step(%d), the buffer: ", n, step);
+        for(int i=0; i<n; i++){
+            double imag = inverse(buf[i].imag);
+            double real = inverse(buf[i].real);
+            printf("(%.3f, %.3f) ", real, imag);
+        }
+        printf("\n");
+    #endif
 }
  
 void sl_fft(complex_sl_t* buf, int n)
@@ -238,3 +287,5 @@ void sl_fft(complex_sl_t* buf, int n)
 
     free(out);
 }
+
+#endif
