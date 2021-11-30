@@ -76,7 +76,7 @@ void test_log_fft(double* input_vec, double* output_vec, int n)
 #endif
 
     for(int i=0; i<n; i++)  output_vec[i] = inverse(buf[i].real);
-
+    
     free(buf);
 }
 
@@ -112,7 +112,7 @@ void test_n_point_fft(int n){
     double* sigNlog_output_vec = (double*)malloc(n * sizeof(double));
     double* variance_vec = (double*)malloc(n * sizeof(double));
 
-    for(int i=0; i<n; i++)  input_vec[i] = randfrom(-1, 1);
+    for(int i=0; i<n; i++)  input_vec[i] = randfrom(0, 1);
 
     test_default_fft(input_vec, default_output_vec, n);
     test_log_fft(input_vec, sigNlog_output_vec, n);
@@ -139,7 +139,21 @@ void test_n_point_fft(int n){
     printf("Average variance: %g, first element: %g, default: %g, new: %g\n", average, variance_vec[0], default_output_vec[0], sigNlog_output_vec[0]);
 #endif
 
-    printf("N: %d, SNR: %g\n", n, average);
+    //  double estimated = n * (pow(2, pow(2, -1 * (FIXED_POINT_FRACTIONAL_BITS))) - pow(2, -1 * pow(2, -1 * FIXED_POINT_FRACTIONAL_BITS))) * (pow(2, pow(2, -1 * (FIXED_POINT_FRACTIONAL_BITS))) - pow(2, -1 * pow(2, -1 * FIXED_POINT_FRACTIONAL_BITS)))/ 6.0;
+
+    //  double estimated = log2(n) * (pow(2, 2 -FIXED_POINT_FRACTIONAL_BITS) - pow(2, -2 - FIXED_POINT_FRACTIONAL_BITS)) * (pow(2, 2 -FIXED_POINT_FRACTIONAL_BITS) - pow(2, -2 - FIXED_POINT_FRACTIONAL_BITS))/ 8.0;
+    
+    //  double estimated = log2(n) * (pow(2, 2 - FIXED_POINT_FRACTIONAL_BITS) + pow(2, -2 - FIXED_POINT_FRACTIONAL_BITS) + 4) / 4;
+    int b = FIXED_POINT_FRACTIONAL_BITS;
+    double estimated = log2(n) * 0.5 * (
+        pow(2, pow(2, -b)) +
+        pow(2, -pow(2, -b)) -
+        3 * pow(2, pow(2, -b - 1)) -
+        3 * pow(2, -pow(2, -b - 1)) + 4
+    );
+    //  printf("N: %d, SNR: %g, Regulated: %g, estimated: %g\n", n, average, average / pow(2, (-2 * FIXED_POINT_FRACTIONAL_BITS)), estimated);
+    
+    printf("N: %d, SNR: %g, estimated: %g\n", n, average, estimated);
 
     free(input_vec);
     free(default_output_vec);

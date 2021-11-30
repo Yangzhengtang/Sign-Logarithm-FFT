@@ -28,6 +28,7 @@ void _fft(cplx* buf, cplx* out, int n, int step)
  
 		for (int i = 0; i < n; i += 2 * step) {
 			
+			
 			complex_sl_t w = get_pow_e(-1.0 * i/n);
 			cplx cplx_w = inverse(w.real) + I * inverse(w.imag);
 			cplx t = cplx_w * out[i+step];

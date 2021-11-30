@@ -7,8 +7,8 @@
 #include <math.h>
 #include <time.h>
 /// Fixed-point Format: 3.13 (16-bit)
-typedef long long fixed_point_t;
-#define FIXED_POINT_FRACTIONAL_BITS 30
+typedef short fixed_point_t;
+#define FIXED_POINT_FRACTIONAL_BITS 11
 /// Converts 13.3 format -> double
 double fixed_to_double(fixed_point_t input);
 

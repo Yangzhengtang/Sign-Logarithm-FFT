@@ -27,7 +27,7 @@
     #define _LOG_FFT_DEBUG_
 #endif
 
-int sg_T = 0b1000000000;
+int sg_T = 1 << 5;
 int sg_B = (int)(sizeof(fixed_point_t))*8 - FIXED_POINT_FRACTIONAL_BITS;         //  Two parameters mentioned in the paper
 
 typedef struct sig_log_t{
