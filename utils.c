@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include <stdlib.h>
+
 /// Fixed-point Format: 3.13 (16-bit)
 typedef short fixed_point_t;
 #define FIXED_POINT_FRACTIONAL_BITS 11
