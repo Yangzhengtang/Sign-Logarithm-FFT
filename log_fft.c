@@ -105,32 +105,27 @@ void add_sl(sig_log_t a, sig_log_t b, sig_log_t ret){
     }
 
     if(a[0] == 1 && b[0] == -1){
-        sig_log_t _b;
-        _b[0] = b[0];
-        _b[1] = b[1];
-        _b[0] = 1;
-        _sub_sl(a, _b, ret);
+        short b0 = b[0];
+        b[0] = 1;
+        _sub_sl(a, b, ret);
+        b[0] = b0;
         return;
     }
     if(a[0] == -1 && b[0] == 1){
-        sig_log_t _a;
-        _a[0] = a[0];
-        _a[1] = a[1];
-        _a[0] = 1;
-        _sub_sl(b, _a, ret);
+        short a0 = a[0];
+        a[0] = 1;
+        _sub_sl(b, a, ret);
+        a[0] = a0;
         return;
     }
     if(a[0] == -1 && b[0] == -1){
-        sig_log_t _a;
-        _a[0] = a[0];
-        _a[1] = a[1];
-        _a[0] = 1;
-
-        sig_log_t _b;
-        _b[0] = b[0];
-        _b[1] = b[1];
-        _b[0] = 1;
-        _add_sl(_a, _b, ret);
+        short b0 = b[0];
+        short a0 = a[0];
+        a[0] = 1;
+        b[0] = 1;
+        _add_sl(a, b, ret);
+        a[0] = a0;
+        b[0] = b0;
         ret[0] = -1;
         return;
     }
@@ -152,33 +147,28 @@ void sub_sl(sig_log_t a, sig_log_t b, sig_log_t ret){
     }
     
     if(a[0] == 1 && b[0] == -1){
-        sig_log_t _b;
-        _b[0] = b[0];
-        _b[1] = b[1];
-        _b[0] = 1;
-        _add_sl(a, _b, ret);
+        short b0 = b[0];
+        b[0] = 1;
+        _add_sl(a, b, ret);
+        b[0] = b[0];
         return;
     }
     if(a[0] == -1 && b[0] == 1){
-        sig_log_t _a;
-        _a[0] = a[0];
-        _a[1] = a[1];
-        _a[0] = 1;
-        _add_sl(_a, b, ret);
+        short a0 = a[0];
+        a[0] = 1;
+        _add_sl(a, b, ret);
         ret[0] = -1;
+        a[0] = a0;
         return;
     }
     if(a[0] == -1 && b[0] == -1){
-        sig_log_t _a;
-        _a[0] = a[0];
-        _a[1] = a[1];
-        _a[0] = 1;
-
-        sig_log_t _b;
-        _b[0] = b[0];
-        _b[1] = b[1];
-        _b[0] = 1;
-        _sub_sl(_b, _a, ret);
+        short a0 = a[0];
+        short b0 = b[0];
+        a[0] = 1;
+        b[0] = 1;
+        _sub_sl(b, a, ret);
+        a[0] = a0;
+        b[0] = b0;
         return;
     }
 
@@ -210,16 +200,16 @@ void copy_two_comp_to_cplx(complex_sl_t dst, sig_log_t real, sig_log_t imag){
 }
 
 void multi_cplx_sl(complex_sl_t a, complex_sl_t b, complex_sl_t ret){
-    sig_log_t ret_real;
-    sig_log_t ret_imag;
+    //sig_log_t ret_real;
+    //sig_log_t ret_imag;
 
-    sig_log_t a_real;
-    sig_log_t a_imag;
-    sig_log_t b_real;
-    sig_log_t b_imag;
+    //sig_log_t a_real;
+    //sig_log_t a_imag;
+    //sig_log_t b_real;
+    //sig_log_t b_imag;
 
-    copy_cplx_to_two_comp(a_real, a_imag, a);
-    copy_cplx_to_two_comp(b_real, b_imag, b);
+    //copy_cplx_to_two_comp(a_real, a_imag, a);
+    //copy_cplx_to_two_comp(b_real, b_imag, b);
 
     sig_log_t temp_1;
     sig_log_t temp_2;
@@ -227,15 +217,15 @@ void multi_cplx_sl(complex_sl_t a, complex_sl_t b, complex_sl_t ret){
     //  ret.real = sub_sl(multi_sl(a.real, b.real), multi_sl(a.imag, b.imag));
     //  ret.imag = add_sl(multi_sl(a.real, b.imag), multi_sl(a.imag, b.real));
 
-    multi_sl(a_real, b_real, temp_1);
-    multi_sl(a_imag, b_imag, temp_2);
-    sub_sl(temp_1, temp_2, ret_real);
+    multi_sl(a, b, temp_1);
+    multi_sl(a+2, b+2, temp_2);
+    sub_sl(temp_1, temp_2, ret);
 
-    multi_sl(a_real, b_imag, temp_1);
-    multi_sl(a_imag, b_real, temp_2);
-    add_sl(temp_1, temp_2, ret_imag);
+    multi_sl(a, b+2, temp_1);
+    multi_sl(a+2, b, temp_2);
+    add_sl(temp_1, temp_2, ret+2);
 
-    copy_two_comp_to_cplx(ret, ret_real, ret_imag);
+    //  copy_two_comp_to_cplx(ret, ret_real, ret_imag);
     return;
 }
 
@@ -244,7 +234,7 @@ void add_cplx_sl(complex_sl_t a, complex_sl_t b, complex_sl_t ret){
     complex_sl_t ret;
     ret.real = add_sl(a.real, b.real);
     ret.imag = add_sl(a.imag, b.imag);
-    */
+    
     sig_log_t a_real;
     sig_log_t a_imag;
     sig_log_t b_real;
@@ -255,10 +245,11 @@ void add_cplx_sl(complex_sl_t a, complex_sl_t b, complex_sl_t ret){
 
     sig_log_t ret_real;
     sig_log_t ret_imag;
+    */
 
-    add_sl(a_real, b_real, ret_real);
-    add_sl(a_imag, b_imag, ret_imag);
-    copy_two_comp_to_cplx(ret, ret_real, ret_imag);
+    add_sl(a, b, ret);
+    add_sl(a+2, b+2, ret+2);
+    //copy_two_comp_to_cplx(ret, ret_real, ret_imag);
     return;
 }
 
@@ -268,7 +259,7 @@ void sub_cplx_sl(complex_sl_t a, complex_sl_t b, complex_sl_t ret){
     ret.real = sub_sl(a.real, b.real);
     ret.imag = sub_sl(a.imag, b.imag);
     return ret;
-    */
+    
     sig_log_t a_real;
     sig_log_t a_imag;
     sig_log_t b_real;
@@ -279,10 +270,10 @@ void sub_cplx_sl(complex_sl_t a, complex_sl_t b, complex_sl_t ret){
 
     sig_log_t ret_real;
     sig_log_t ret_imag;
-
-    sub_sl(a_real, b_real, ret_real);
-    sub_sl(a_imag, b_imag, ret_imag);
-    copy_two_comp_to_cplx(ret, ret_real, ret_imag);
+    */
+    sub_sl(a, b, ret);
+    sub_sl(a+2, b+2, ret+2);
+    //copy_two_comp_to_cplx(ret, ret_real, ret_imag);
     return;
 }
 
@@ -390,10 +381,7 @@ void _sl_fft_256(complex_sl_t* buf, complex_sl_t* out)
 		_sl_fft_512(out, buf);
 		_sl_fft_512(out[256], buf[256]);
 
-        printf("before what's up\n");
 		for (int i = 0; i < FFT_POINT; i += 512) {
-            printf("*** What's up %d\n", i);
-
             complex_sl_t w;
             get_pow_e(-1.0 * i / FFT_POINT, w);
             complex_sl_t temp;
