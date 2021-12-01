@@ -552,8 +552,8 @@ void sl_fft(complex_sl_t buf[FFT_POINT])
 	for (int i = 0; i < FFT_POINT; i++)
         copy_cplx_sl(out[i], buf[i]);
  
-    //  _sl_fft(buf, out, 1);
-	_sl_fft_1(buf, out);
+    _sl_fft(buf, out, 1);
+	//  _sl_fft_1(buf, out);
 }
 
 #endif
