@@ -1,5 +1,5 @@
 //  Simple test
-#include "log_fft.h"
+#include "log_fft.c"
 
 int simple_test(){
     fixed_point_t a;
