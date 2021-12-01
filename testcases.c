@@ -35,6 +35,20 @@ void test_log_fft(double* input_vec, double* output_vec)
         copy_cplx_to_two_comp(real, imag, buf[i]);
         output_vec[i] = inverse(imag);
     }
+
+    for(int i2=0; i2<FFT_POINT; i2++)  printf("%g, ", output_vec[i2]);
+    printf("\n");
+
+    for(int i3=0; i3<FFT_POINT; i3++){
+        sig_log_t real;
+        sig_log_t imag;
+        copy_cplx_to_two_comp(real, imag, buf[i3]);
+        output_vec[i3] = inverse(real);
+    }
+    for(int i4=0; i4<FFT_POINT; i4++)  printf("%g, ", output_vec[i4]);
+
+
+    
     //  free(buf);
 }
 
@@ -43,8 +57,7 @@ void simple_test(){
     for(int i=0; i<FFT_POINT; i++)  input_vec[i] = randfrom(0,1);
     double output_vec1[FFT_POINT];
     test_log_fft(input_vec, output_vec1);
-    for(int i=0; i<FFT_POINT; i++)  printf("%g, ", output_vec1[i]);
-    printf("What's up\n");
+    //  for(int i=0; i<FFT_POINT; i++)  printf("%g, ", output_vec1[i]);
 }
 
 int main(){
@@ -57,6 +70,5 @@ int main(){
         test_n_point_fft(1 << i);
     }
     */
-    printf("What's up");
     return 0;
 }

@@ -1,4 +1,4 @@
-
+#define FFT_POINT 8
 
 /* typedef struct sig_log_t{
     int sig_a;
