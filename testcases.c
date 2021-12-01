@@ -5,13 +5,11 @@
 //  #define _DEBUG_PRINT_
 //  #define _SUPER_DEBUG_
 
-void test_log_fft(double* input_vec, double* output_vec, int n)
+void test_log_fft(double* input_vec, double* output_vec)
 {
-    complex_sl_t buf[8];
+    complex_sl_t buf[FFT_POINT];
 
-    for(int i1=0; i1<n; i1++){
-        //  buf[i1].real = quantizer(input_vec[i1]);
-        //  buf[i1].imag = quantizer(0);
+    for(int i1=0; i1<FFT_POINT; i1++){
         
         sig_log_t real;
         sig_log_t imag;
@@ -31,7 +29,7 @@ void test_log_fft(double* input_vec, double* output_vec, int n)
     print_array_cplx_sl("FFT : ", buf, n);
 #endif
 
-    for(int i=0; i<n; i++){
+    for(int i=0; i<FFT_POINT; i++){
         sig_log_t real;
         sig_log_t imag;
         copy_cplx_to_two_comp(real, imag, buf[i]);
@@ -41,10 +39,11 @@ void test_log_fft(double* input_vec, double* output_vec, int n)
 }
 
 void simple_test(){
-    double input_vec[8] = {1, 1, 1, 1, 0, 0, 0, 0};
-    double output_vec1[8] = {1.0,1.0,1.0,1.0,0,0,0,0};
-    test_log_fft(input_vec, output_vec1, 8);
-    for(int i=0; i<9; i++)  printf("%g, ", output_vec1[i]);
+    double input_vec[FFT_POINT];
+    for(int i=0; i<FFT_POINT; i++)  input_vec[i] = randfrom(0,1);
+    double output_vec1[FFT_POINT];
+    test_log_fft(input_vec, output_vec1);
+    for(int i=0; i<FFT_POINT; i++)  printf("%g, ", output_vec1[i]);
     printf("What's up\n");
 }
 

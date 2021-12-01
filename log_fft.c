@@ -342,7 +342,7 @@ void get_pow_e(double ratio, complex_sl_t ret){
     return;
 }
 
-#define FFT_POINT 8
+#define FFT_POINT 1024
 void _sl_fft(complex_sl_t buf[FFT_POINT], complex_sl_t out[FFT_POINT], int step)
 {
     printf("On %d\n", step);
@@ -363,10 +363,112 @@ void _sl_fft(complex_sl_t buf[FFT_POINT], complex_sl_t out[FFT_POINT], int step)
 	}
 }
 
+void _sl_fft_1024(complex_sl_t* buf, complex_sl_t* out)
+{
+    return;
+}
+
+void _sl_fft_512(complex_sl_t* buf, complex_sl_t* out)
+{
+    if (32 < FFT_POINT) {
+		_sl_fft_1024(out, buf);
+		_sl_fft_1024(out + 512 * 4, buf + 512 * 4);
+
+		for (int i = 0; i < FFT_POINT; i += 1024) {
+            complex_sl_t w;
+            get_pow_e(-1.0 * i / FFT_POINT, w);
+            complex_sl_t temp;
+            multi_cplx_sl(w, out[i+512], temp);
+			add_cplx_sl(out[i * 4], temp, buf[(i / 2) * 4]);
+			sub_cplx_sl(out[i * 4], temp, buf[((i + FFT_POINT)/2) * 4]);
+		}
+	}
+}
+
+void _sl_fft_256(complex_sl_t* buf, complex_sl_t* out)
+{
+    if (32 < FFT_POINT) {
+		_sl_fft_512(out, buf);
+		_sl_fft_512(out + 256 * 4, buf + 256 * 4);
+
+		for (int i = 0; i < FFT_POINT; i += 512) {
+            complex_sl_t w;
+            get_pow_e(-1.0 * i / FFT_POINT, w);
+            complex_sl_t temp;
+            multi_cplx_sl(w, out[i+256], temp);
+			add_cplx_sl(out[i * 4], temp, buf[(i / 2) * 4]);
+			sub_cplx_sl(out[i * 4], temp, buf[((i + FFT_POINT)/2) * 4]);
+		}
+	}
+}
+
+void _sl_fft_128(complex_sl_t* buf, complex_sl_t* out)
+{
+    if (32 < FFT_POINT) {
+		_sl_fft_256(out, buf);
+		_sl_fft_256(out + 128 * 4, buf + 128 * 4);
+
+		for (int i = 0; i < FFT_POINT; i += 256) {
+            complex_sl_t w;
+            get_pow_e(-1.0 * i / FFT_POINT, w);
+            complex_sl_t temp;
+            multi_cplx_sl(w, out[i+128], temp);
+			add_cplx_sl(out[i * 4], temp, buf[(i / 2) * 4]);
+			sub_cplx_sl(out[i * 4], temp, buf[((i + FFT_POINT)/2) * 4]);
+		}
+	}
+}
+
+
+void _sl_fft_64(complex_sl_t* buf, complex_sl_t* out)
+{
+    if (64 < FFT_POINT) {
+		_sl_fft_128(out, buf);
+		_sl_fft_128(out + 64 * 4, buf + 64 * 4);
+
+		for (int i = 0; i < FFT_POINT; i += 128) {
+            complex_sl_t w;
+            get_pow_e(-1.0 * i / FFT_POINT, w);
+            complex_sl_t temp;
+            multi_cplx_sl(w, out[i+64], temp);
+			add_cplx_sl(out[i * 4], temp, buf[(i / 2) * 4]);
+			sub_cplx_sl(out[i * 4], temp, buf[((i + FFT_POINT)/2) * 4]);
+		}
+	}
+}
+
+void _sl_fft_32(complex_sl_t* buf, complex_sl_t* out)
+{
+    if (32 < FFT_POINT) {
+		_sl_fft_32(out, buf);
+		_sl_fft_32(out + 32 * 4, buf + 32 * 4);
+
+		for (int i = 0; i < FFT_POINT; i += 64) {
+            complex_sl_t w;
+            get_pow_e(-1.0 * i / FFT_POINT, w);
+            complex_sl_t temp;
+            multi_cplx_sl(w, out[i+32], temp);
+			add_cplx_sl(out[i * 4], temp, buf[(i / 2) * 4]);
+			sub_cplx_sl(out[i * 4], temp, buf[((i + FFT_POINT)/2) * 4]);
+		}
+	}
+}
 
 void _sl_fft_16(complex_sl_t* buf, complex_sl_t* out)
 {
-    return;
+    if (16 < FFT_POINT) {
+		_sl_fft_32(out, buf);
+		_sl_fft_32(out + 16 * 4, buf + 16 * 4);
+
+		for (int i = 0; i < FFT_POINT; i += 32) {
+            complex_sl_t w;
+            get_pow_e(-1.0 * i / FFT_POINT, w);
+            complex_sl_t temp;
+            multi_cplx_sl(w, out[i+16], temp);
+			add_cplx_sl(out[i * 4], temp, buf[(i / 2) * 4]);
+			sub_cplx_sl(out[i * 4], temp, buf[((i + FFT_POINT)/2) * 4]);
+		}
+	}
 }
 
 void _sl_fft_8(complex_sl_t* buf, complex_sl_t* out)
